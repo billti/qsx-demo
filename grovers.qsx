@@ -1,0 +1,65 @@
+namespace Grovers {
+    open Microsoft.Quantum.Intrinsic;
+    open Microsoft.Quantum.Canon;
+
+    @EntryPoint()
+    operation SearchForMarkedInput() : Result[] {
+        use qs = Qubit[3];
+        PrepareUniform(qs);
+
+        ReflectAboutMarked(qs);
+        ReflectAboutUniform(qs);
+
+        ReflectAboutMarked(qs);
+        ReflectAboutUniform(qs);
+
+        DumpMachine();
+
+        return [M(qs[0]), M(qs[1]), M(qs[2])];
+    }
+
+    operation PrepareUniform(qs : Qubit[]) : Unit {
+        H(qs[0]);
+        H(qs[1]);
+        H(qs[2]);
+    }
+
+    operation PrepareAllOnes(qs : Qubit[]) : Unit {
+        X(qs[0]);
+        X(qs[1]);
+        X(qs[2]);
+    }
+
+    operation ReflectAboutMarked(qs : Qubit[]) : Unit {
+        use outputQubit = Qubit();
+
+        X(outputQubit);
+        H(outputQubit);
+        X(qs[0]);
+        X(qs[2]);
+
+        use aux = Qubit();
+        PhaseCCX(qs[0], qs[1], aux);
+        CCNOT(aux, qs[2], outputQubit);
+        PhaseCCXAdj(qs[0], qs[1], aux);
+
+        X(qs[2]);
+        X(qs[0]);
+        H(outputQubit);
+        X(outputQubit);
+    }
+
+    operation ReflectAboutUniform(qs : Qubit[]) : Unit {
+        PrepareUniform(qs);
+        PrepareAllOnes(qs);
+
+        ReflectAboutAllOnes(qs);
+
+        PrepareAllOnes(qs);
+        PrepareUniform(qs);
+    }
+
+    operation ReflectAboutAllOnes(qs : Qubit[]) : Unit {
+        CCZ(qs[0], qs[1], qs[2]);
+    }
+}
